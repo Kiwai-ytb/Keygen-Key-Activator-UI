@@ -1,5 +1,4 @@
 import customtkinter as ctk, subprocess
-from tkinter import messagebox
 from api_call import activate_key
 
 def get_uuid():
