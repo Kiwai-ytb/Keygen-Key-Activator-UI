@@ -27,22 +27,23 @@ class App(ctk.CTk):
         frame.pack(pady=30, padx=50, fill="both", expand=True)
 
         title_font = ctk.CTkFont(family="Segoe UI Bold", size=30)
-        main_font = ctk.CTkFont(family="Segoe UI", size=15)
+        self.main_font = ctk.CTkFont(family="Segoe UI", size=15)
 
         # Widgets
         title = ctk.CTkLabel(frame, text="Welcome to Kiwai's Key Activator", font=title_font)
-        ty_msg = ctk.CTkLabel(frame, text="Made by Kiwai with <3", font=main_font)
-        activate_button = ctk.CTkButton(frame, text="Activate it!", command=self.on_activate, font=main_font, width=525)
+        ty_msg = ctk.CTkLabel(frame, text="Made by Kiwai with <3", font=self.main_font)
+        activate_button = ctk.CTkButton(frame, text="Activate it!", command=self.on_activate, font=self.main_font, width=522)
 
         # Frame for the label + entry line
         key_frame = ctk.CTkFrame(frame)
-        key_title = ctk.CTkLabel(key_frame, text="Please enter your Key to Activate it:", font=main_font)
-        self.key_input = ctk.CTkEntry(key_frame, placeholder_text="Put your Key here", font=main_font, width=250)
+        key_title = ctk.CTkLabel(key_frame, text="Please enter your Key to Activate it:", font=self.main_font)
+        self.key_input = ctk.CTkEntry(key_frame, placeholder_text="Put your Key here", font=self.main_font, width=250)
 
-        # Success/fail msg
-        self.success_msg = ctk.CTkLabel(frame, text_color="green", font=main_font)
-        self.fail_msg = ctk.CTkLabel(frame, text_color="red", font=main_font)
-        self.no_key_msg = ctk.CTkLabel(frame, text="Please enter a Key", text_color="red", font=main_font)
+        # Success/fail msg + frame
+        self.message_frame = ctk.CTkFrame(frame, fg_color="transparent", height=60, width=522)
+        self.success_msg = None
+        self.fail_msg = None
+        self.no_key_msg = None
 
         # Pack vertical dans le frame principal
         title.pack(pady=20)
@@ -54,12 +55,29 @@ class App(ctk.CTk):
 
         activate_button.pack(padx=20, pady=5)
 
+        # Pack the msg frame
+        self.message_frame.pack(padx=20, pady=5)
+        
         # Created by Kiwai msg
         ty_msg.pack(side="bottom", pady=10)
 
     def on_activate(self):
+        if self.success_msg is not None:
+            self.success_msg.destroy()
+            self.success_msg = None
+        
+        if self.fail_msg is not None:
+            self.fail_msg.destroy()
+            self.fail_msg = None
+
+        if self.no_key_msg is not None:
+            self.no_key_msg.destroy()
+            self.no_key_msg = None
+
         license_key = self.key_input.get().strip()
         if not license_key:
+            print(f"No license key were entered!")
+            self.no_key_msg = ctk.CTkLabel(self.message_frame, text="Please enter a Key", text_color="red", font=self.main_font)
             self.no_key_msg.pack(padx=10, pady=10)
             return
         
@@ -72,22 +90,22 @@ class App(ctk.CTk):
         result = activate_key(license_key, machine_udid)
 
         if result.get("success"):
-            self.success_msg.configure(text=f"Key `{license_key}` activated successfuly!")
+            self.success_msg = ctk.CTkLabel(self.message_frame, text=f"Key `{license_key}` successfuly activated!", text_color="green", font=self.main_font)
             self.success_msg.pack(padx=10, pady=10)
             self.key_input.delete(first_index=0, last_index=len_k)
             print("Successfuly activated the key!")
         elif result.get("status") == 422:
-            self.fail_msg.configure(text=f"Key `{license_key}` couln't be activated!\nError: Key already activated!")
+            self.fail_msg = ctk.CTkLabel(self.message_frame, text="Key is already activated!", text_color="red", font=self.main_font)
             self.fail_msg.pack(padx=10, pady=10)
             print(f"Couln't activate the key! (already activated)")
         elif result.get("error") == "'NoneType' object is not subscriptable":
-            self.fail_msg.configure(text=f"Key `{license_key}` couln't be activated!\nError: Unvalid Key!")
+            self.fail_msg = ctk.CTkLabel(self.message_frame, text="Unvalid Key!", text_color="red", font=self.main_font)
             self.fail_msg.pack(padx=10, pady=10)
             print(f"Couln't activate the key! (unvalid key)")
         else:
-            self.fail_msg.configure(text=f"Key `{license_key}` couln't be activated!\nError: {result.get("error")}")
+            self.fail_msg = ctk.CTkLabel(self.message_frame, text=f"Key `{license_key}` couln't be activated!\nError: {result.get("error")}", text_color="red", font=self.main_font)
             self.fail_msg.pack(padx=10, pady=10)
-            print(f"Couln't activate the key!")
+            print(f"Couln't activate the key! ({result.get("error")})")
 
 app = App()
 app.mainloop()
