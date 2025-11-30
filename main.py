@@ -1,5 +1,12 @@
-import customtkinter as ctk, subprocess
+import customtkinter as ctk, subprocess, sys, os
 from api_call import activate_key
+
+def resource_path(relative_path: str) -> str:
+    if hasattr(sys, "frozen"):
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.dirname(__file__)
+    return os.path.join(base_path, relative_path)
 
 def get_uuid():
     try:
@@ -17,7 +24,9 @@ class App(ctk.CTk):
         # Basic parameters
         self.geometry("600x350")
         self.title("Kiwai's Key Activator")
-        self.iconbitmap("Alya.ico")
+
+        icon_path = resource_path("Alya.ico")
+        self.iconbitmap(icon_path)
 
         ctk.set_appearance_mode("system")
         ctk.set_default_color_theme("dark-blue")
